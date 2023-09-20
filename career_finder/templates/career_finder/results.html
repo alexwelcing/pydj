@@ -1,0 +1,17 @@
+{% block content %}
+  <h1>Career Pages</h1>
+  <table>
+    <tr>
+      <th>Company</th>
+      <th>URL</th>
+      <th>Career Page</th>
+    </tr>
+    {% for row in career_pages %}
+      <tr>
+        <td>{{ row.Name }}</td>
+        <td>{{ row.URL }}</td>
+        <td>{{ row.Career_Page }}</td>  <!-- Note the change here -->
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

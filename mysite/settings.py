@@ -25,8 +25,9 @@ SECRET_KEY = 'django-insecure-)7=h^omdur$b(24*#2c&3(3mhan+x$dy2=0rpzs9!@g5l-u!!c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://8000-gitpodsampl-templatepyt-ypvf8v2jv7a.ws-us104.gitpod.io', 'localhost', '127.0.0.1']
 
+CSRF_TRUSTED_ORIGINS = ['https://8000-gitpodsampl-templatepyt-ypvf8v2jv7a.ws-us104.gitpod.io']
 
 # Application definition
 
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'career_finder',    
     'django.contrib.staticfiles',
 ]
 
