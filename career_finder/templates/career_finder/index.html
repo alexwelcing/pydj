@@ -18,8 +18,8 @@
             </div>
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
-
         <div class="mt-5">
+            
             <h2>Career Pages</h2>
             <table class="table table-striped" id="results-table">
                 <thead>
@@ -35,36 +35,7 @@
             </table>
         </div>
     </div>
-
-    <script>
-        $(document).ready(function() {
-            $('#upload-form').on('submit', function(e) {
-                e.preventDefault();
-                var formData = new FormData(this);
-                $.ajax({
-                    url: '/',
-                    type: 'POST',
-                    data: formData,
-                    success: function(data) {
-                        if (data.status === 'partial' || data.status === 'complete') {
-                            // Update table
-                            var tbody = $('#results-table tbody');
-                            tbody.empty(); // Clear existing rows
-                            data.data.forEach(function(row) {
-                                var careerPage = row.Career_Page || '...';
-                                tbody.append('<tr><td>' + row.Company + '</td><td>' + row.URL + '</td><td>' + careerPage + '</td></tr>');
-                            });
-                        }
-                    },
-                    cache: false,
-                    contentType: false,
-                    processData: false
-                });
-            });
-        });
-    </script>
-
-    <!-- Other JS files -->
+    <script src="{% static 'js/upload.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
