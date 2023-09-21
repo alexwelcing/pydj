@@ -1,6 +1,8 @@
 from supabase import create_client, Client
 from django.conf import settings
 import logging
+import json
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +33,16 @@ def update_supabase_data(career_pages):
 
         query_result = supabase.table('companies').upsert(upsert_data).execute()
 
-
     except Exception as e:
         logger.error(f"Exception in update_supabase_data: {e}")
+
+def fetch_supabase_companies():
+    try:
+        query_result = supabase.table('companies').select('*').execute()
+        if query_result.data:
+            return query_result.data, None
+        else:
+            return None, "Error fetching data."
+    except Exception as e:
+        logger.error(f"Exception in fetch_supabase_companies: {e}")
+        return None, str(e)

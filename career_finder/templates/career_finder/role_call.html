@@ -1,0 +1,92 @@
+
+{% extends 'career_finder/index.html' %}
+
+<!-- role_call.html -->
+
+{% block content %}
+
+<div class="container">
+  <h1 class="text-center">Role Call</h1>
+  <div class="text-center">
+    <button id="startSearching" class="btn btn-primary">Start Searching</button>
+    <div id="progressIndicator" class="d-none">
+      <span>Working </span>
+      <span id="progressPercent">0%</span>
+    </div>
+  </div>
+
+  <!-- Table and Row Selection UI -->
+  <button id="populateTable" class="btn btn-secondary">Populate Table</button>
+  <div class="mt-4">
+    <input type="text" id="searchInput" placeholder="Search by company name" class="form-control mb-2">
+    <table id="companyTable" class="table table-bordered table-hover">
+      <thead>
+        <tr>
+            <th>Select</th> 
+            <th>ID</th>
+            <th>Company Name</th>
+            <th>URL</th>
+            <th>Careers</th>
+            <th>Roles</th>
+        </tr>
+    </thead>
+      <tbody>
+          <!-- Rows will be populated here -->
+      </tbody>
+  </table>  
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async function() {
+    let selectedRows = [];
+
+    document.querySelector("#startSearching").addEventListener("click", async function() {
+      if (selectedRows.length === 0) {
+        alert("Please select at least one row to search.");
+        return;
+      }
+
+      const csrftoken = getCookie('csrftoken'); // Assume getCookie is a function to get CSRF token
+      const response = await fetch('/start_scraping/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({ 'selectedRows': selectedRows })
+      });
+
+      const data = await response.json();
+      if (data.status === 'success') {
+        // Update your UI as needed
+      }
+    });
+  });
+  async function populateTable() {
+    const response = await fetch('/fetch_companies/');
+    const data = await response.json();
+    if (data.status === 'success') {
+        const companies = data.data;
+        let tableRows = '';
+        
+        for (const company of companies) {
+            tableRows += `
+            <tr data-id="${company.id}">
+                <td><input type="checkbox" class="rowCheckbox"></td>
+                <td>${company.company_name}</td>
+                <td>${ company.url || ''}</td>
+                <td>${company.careers || ''}</td>
+                <td>${company.roles || ''}</td>
+            </tr>`;
+        }
+        
+        const tableBody = document.querySelector("#companyTable");
+        tableBody.innerHTML = tableRows;
+    }
+}
+
+    // Attach event listener to the "Populate Table" button
+    document.querySelector("#populateTable").addEventListener("click", populateTable);
+</script>
+{% endblock %}
