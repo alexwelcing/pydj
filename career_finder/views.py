@@ -1,53 +1,63 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from .forms import UploadCSVForm
-from .services.career_page_finder import find_career_page
-from .services.supabase_service import update_supabase_data
+from .services import career_page_finder, supabase_service, dives
+from urllib.parse import urljoin
 import csv
 import io
 import logging
-from urllib.parse import urljoin
-from .services.dives import google_search_and_scrape
-from django.views.decorators.csrf import csrf_exempt
-from .services.supabase_service import fetch_supabase_companies
-from supabase import create_client, Client
 import json
 
-
-# Initialize logging
 logger = logging.getLogger(__name__)
 
-# Initialize Supabase client
-supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
-
-def fetch_companies(request):
+def fetch_companies_data(request):
     try:
-        logger.info("About to fetch companies from Supabase.")
-        companies, error = fetch_supabase_companies()
-        
-        if error is None:
-            return JsonResponse({'status': 'success', 'data': companies})
-        else:
-            logger.error(f"Error fetching companies: {error}")
-            return JsonResponse({'status': 'error', 'message': error})
+        companies, _ = supabase_service.fetch_supabase_companies()
+
+        companies_data = [{'id': company['id'], 
+                           'company_name': company['company_name'], 
+                           'url': company['url'], 
+                           'careers': company['careers'], 
+                           'roles': company['roles']} 
+                          for company in companies]
+        return JsonResponse({'status': 'success', 'data': companies_data})
     except Exception as e:
-        logger.error(f"Exception in fetch_companies: {e}")
+        logger.error(f"Exception in fetch_companies_data: {e}")
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 @csrf_exempt
 def start_scraping(request):
-    try:
-        if request.method == 'POST':
-            selected_rows = json.loads(request.body.decode('utf-8')).get('selectedRows', [])
-            for row in selected_rows:
-                google_search_and_scrape(row['base_url'], row)
-            return JsonResponse({'status': 'success'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)})
+    if request.method == 'POST':
+        selected_rows = json.loads(request.body.decode('utf-8')).get('selectedRows', [])
+        for row in selected_rows:
+            google_search_and_scrape(row['url'], row)
+        return JsonResponse({'status': 'success'})
 
 def role_call(request):
-    return render(request, 'career_finder/role_call.html')
+    try:
+        companies = fetch_supabase_companies()
+        if not companies:
+            logger.error(f"No companies found.")
+            companies = []
+
+        roles_data = []
+        for company in companies:
+            if isinstance(company, dict) and 'id' in company:
+                roles, error = fetch_roles_by_company_id(company['id'])
+                if error:
+                    logger.error(f"Error fetching roles for company ID {company['id']}: {error}")
+                else:
+                    roles_data.append(roles)
+            else:
+                logger.error(f"Unexpected company data format: {company}")
+        
+        return render(request, 'career_finder/role_call.html', {
+            'roles_data': roles_data
+        })
+    except Exception as e:
+        logger.error(f"Exception in role_call: {e}")
+        return JsonResponse({'status': 'error', 'message': str(e)})
 
 def index(request):
     if request.method == 'POST':
@@ -57,23 +67,17 @@ def index(request):
             csv_data = csv_file.read().decode('UTF-8')
             io_string = io.StringIO(csv_data)
             reader = csv.DictReader(io_string)
-            
-            # Process each row and update the database immediately
-            for row in reader:  # Now, 'row' should be a dictionary
+            for row in reader:
                 if 'url' in row and 'company_name' in row:
                     career_url = find_career_page(base_url=row['url'], row=row)
                     complete_career_url = urljoin(row['url'], career_url)
-                    row['career_page_url'] = complete_career_url  # Updating the 'career_page_url' column
-
-                    # Update the Supabase database right away
-                    update_supabase_data([row])  # Sending a list containing the single row
-                    
-                    logger.info(f"Success: Found career page for {row['company_name']} and updated the database.")
-            
+                    row['career_page_url'] = complete_career_url
+                    update_supabase_data([row])
             return JsonResponse({'status': 'complete'})
         else:
             return JsonResponse({'status': 'error', 'message': 'Invalid form'})
     else:
-        form = UploadCSVForm()
-
-    return render(request, 'career_finder/index.html', {'form': form, 'role_call_link': '/role_call'})
+        return render(request, 'career_finder/index.html', {
+            'form': UploadCSVForm(), 
+            'role_call_link': '/role_call'
+        })

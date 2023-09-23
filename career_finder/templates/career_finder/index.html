@@ -1,51 +1,79 @@
 {% load static %}
-
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        {% block content %}
-
+<head>
     <title>Career Finder</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <style>
+        /* Custom styles */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin-top: 5%;
+        }
+        .table-wrapper {
+            margin-top: 3%;
+        }
+        #progressIndicator {
+            display: none;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <a href="{% url 'roll_call' %}">
-        <button class="btn btn-primary">Go to Roll Call</button>
-      </a>
-    <div class="container mt-5">
-        <h1 class="text-center">Upload a CSV File</h1>
-        <form id="upload-form" method="post" enctype="multipart/form-data" class="mt-4">
-            {% csrf_token %}
-            <div class="form-group">
-                {{ form.label_tag }}
-                {{ form }}
-            </div>
-            <button type="submit" class="btn btn-primary">Upload</button>
-        </form>
-        <div class="mt-5">
-            
-            <h2>Career Pages</h2>
-            <table class="table table-striped" id="results-table">
-                <thead>
-                    <tr>
-                        <th>Company</th>
-                        <th>URL</th>
-                        <th>Career Page</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data will be populated here -->
-                </tbody>
-            </table>
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Career Finder</h1>
+            {% block content %}
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{% url 'roll_call' %}">
+                <button class="btn btn-primary">Go to Role Call</button>
+            </a>
         </div>
     </div>
-
-    <script src="{% static 'js/upload.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
+    <form id="upload-form" method="post" enctype="multipart/form-data" class="mb-4">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.label_tag }}
+            {{ form }}
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <h2>Career Pages</h2>
+        <table class="table table-striped" id="results-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>URL</th>
+                    <th>Career Page</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td>{{ company.company_name }}</td>
+                    <td>{{ company.url }}</td>
+                    <td>{{ company.career_page_url }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
-
+<script src="{% static 'js/upload.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
 </html>
