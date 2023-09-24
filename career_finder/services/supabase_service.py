@@ -2,6 +2,7 @@ from supabase import create_client, Client
 from django.conf import settings
 import logging
 
+# Initialize logger and Supabase client
 logger = logging.getLogger(__name__)
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
 
@@ -48,4 +49,4 @@ def add_role_data(company_id, role_title, role_link, salary, score):
 def fetch_roles_by_company_id(company_id):
     table = "roles"
     roles = supabase.table(table).select("*").eq("company_id", company_id).execute()
-    return roles["data"], None
+    return roles.data, None

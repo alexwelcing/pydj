@@ -1,99 +1,55 @@
-{% extends 'career_finder/index.html' %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Call</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Role Call</h1>
-
-    <div class="text-center mb-4">
-        <button id="populateTable" class="btn btn-primary mb-2">Populate Table</button>
-        <button id="startSearching" class="btn btn-secondary" disabled>Start Searching</button>
+    <h1 class="mb-4">Role Call</h1>
+    <div id="status-div" class="alert alert-secondary" role="alert">
+        Awaiting action.
     </div>
-
-    <table id="companyTable" class="table table-bordered table-hover mt-3">
+    <div class="mb-4">
+        <a href="{% url 'index' %}">
+            <button class="btn btn-secondary">Go to Upload</button>
+        </a>
+    </div>
+    <table class="table">
         <thead>
             <tr>
-                <th>Select</th>
-                <th>ID</th>
-                <th>Company Name</th>
-                <th>URL</th>
-                <th>Careers</th>
-                <th>Roles</th>
+                <th scope="col">#</th>
+                <th scope="col">Role</th>
+                <th scope="col">Link</th>
+                <!-- Add other headers as needed -->
             </tr>
         </thead>
         <tbody>
-            {% for company in companies %}
-                <tr>
-                    <td><input type="checkbox" class="rowCheckbox"></td>
-                    <td>{{ company.id }}</td>
-                    <td>{{ company.company_name }}</td>
-                    <td>{{ company.url }}</td>
-                    <td>{{ company.careers }}</td>
-                    <td>{{ company.roles }}</td>
-                </tr>
-            {% endfor %}
+            <!-- Data will be populated here via JavaScript -->
         </tbody>
-    </table>  
+    </table>
 </div>
-
+<script src="{% static 'js/upload.js' %}"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const checkboxes = document.querySelectorAll(".rowCheckbox");
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener("change", function() {
-                const selectedRows = document.querySelectorAll(".rowCheckbox:checked");
-                if (selectedRows.length > 0) {
-                    document.getElementById("startSearching").disabled = false;
-                } else {
-                    document.getElementById("startSearching").disabled = true;
-                }
-            });
-        });
-
-        document.querySelector("#populateTable").addEventListener("click", async function() {
-    try {
-        const response = await fetch('/fetch_companies/');  // Assuming '/fetch_companies/' is the endpoint to fetch companies
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            const companies = data.data;
-            let tableRows = '';
-            
-            for (const company of companies) {
-                tableRows += `
-                <tr>
-                    <td><input type="checkbox" class="rowCheckbox"></td>
-                    <td>${company.id}</td>
-                    <td>${company.company_name}</td>
-                    <td>${company.url}</td>
-                    <td>${company.careers}</td>
-                    <td>${company.roles}</td>
-                </tr>`;
+    // Toggling the "Go to Role Call" and "Go to Upload" buttons
+    const roleCallBtn = document.querySelector(".btn-secondary");
+    if (roleCallBtn) {
+        roleCallBtn.addEventListener('click', function() {
+            const currentPage = window.location.pathname;
+            if (currentPage.endsWith('role_call/')) {
+                roleCallBtn.innerText = 'Go to Upload';
+                roleCallBtn.href = "{% url 'index' %}";
+            } else {
+                roleCallBtn.innerText = 'Go to Role Call';
+                roleCallBtn.href = "{% url 'role_call' %}";
             }
-            
-            const tableBody = document.querySelector("#companyTable tbody");
-            tableBody.innerHTML = tableRows;
-            
-            // Re-attach event listener to the checkboxes since we've replaced innerHTML
-            const checkboxes = document.querySelectorAll(".rowCheckbox");
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener("change", function() {
-                    const selectedRows = document.querySelectorAll(".rowCheckbox:checked");
-                    if (selectedRows.length > 0) {
-                        document.getElementById("startSearching").disabled = false;
-                    } else {
-                        document.getElementById("startSearching").disabled = true;
-                    }
-                });
-            });
-        } else {
-            alert("Error fetching companies");
-        }
-    } catch (error) {
-        console.error("Error fetching companies:", error);
-        alert("There was an error fetching the companies. Please try again later.");
+        });
     }
-});
-
-    });
 </script>
-{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

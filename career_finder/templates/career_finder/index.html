@@ -1,77 +1,46 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Career Finder</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <style>
-        /* Custom styles */
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            margin-top: 5%;
-        }
-        .table-wrapper {
-            margin-top: 3%;
-        }
-        #progressIndicator {
-            display: none;
-        }
-        .btn-primary {
-            background-color: #4CAF50;
-            border-color: #4CAF50;
-        }
-        .btn-primary:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload CSV</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1>Career Finder</h1>
-            {% block content %}
-        </div>
-        <div class="col-md-4 text-right">
-            <a href="{% url 'roll_call' %}">
-                <button class="btn btn-primary">Go to Role Call</button>
-            </a>
-        </div>
+<div class="container mt-5">
+    <h1 class="mb-4">Upload CSV</h1>
+    <div class="mb-4">
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.label_tag }}
+                {{ form }}
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </div>
+        </form>
     </div>
-    <form id="upload-form" method="post" enctype="multipart/form-data" class="mb-4">
-        {% csrf_token %}
-        <div class="form-group">
-            {{ form.label_tag }}
-            {{ form }}
-            <button type="submit" class="btn btn-primary">Upload</button>
-        </div>
-    </form>
-    <div class="table-responsive">
-        <h2>Career Pages</h2>
-        <table class="table table-striped" id="results-table">
-            <thead>
-                <tr>
-                    <th>Company</th>
-                    <th>URL</th>
-                    <th>Career Page</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for company in companies %}
-                <tr>
-                    <td>{{ company.company_name }}</td>
-                    <td>{{ company.url }}</td>
-                    <td>{{ company.career_page_url }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div id="status-div" class="alert alert-secondary" role="alert">
+        Awaiting action.
     </div>
+    <div class="mb-4">
+        <a href="{% url 'role_call' %}">
+            <button class="btn btn-secondary">Go to Role Call</button>
+        </a>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Company Name</th>
+                <th scope="col">URL</th>
+                <!-- Add other headers as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated here via JavaScript -->
+        </tbody>
+    </table>
 </div>
-{% endblock %}
 <script src="{% static 'js/upload.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
