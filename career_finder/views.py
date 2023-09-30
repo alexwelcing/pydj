@@ -7,7 +7,8 @@ from .services.supabase_service import (
     update_supabase_data, 
     fetch_roles_by_company_id, 
     fetch_supabase_companies,
-    add_role_data
+    add_role_data,
+    fetch_roles_for_multiple_companies
 )
 from .services.dives import find_and_add_roles_from_dives
 from urllib.parse import urljoin
@@ -42,20 +43,13 @@ def start_scraping(request):
 
 def role_call(request):
     try:
-        companies, _ = fetch_supabase_companies()
-        roles_data = []
-        for company in companies:
-            if isinstance(company, dict) and 'id' in company:
-                roles, error = fetch_roles_by_company_id(company['id'])
-                if not error:
-                    roles_data.extend(roles)
-                else:
-                    logger.error(f"Error fetching roles for company ID {company['id']}: {error}")
-            else:
-                logger.error(f"Unexpected company data format: {company}")
-        
+        companies, _ = fetch_supabase_companies(limit=20)
+        company_ids = [company['id'] for company in companies]
+        all_roles, _ = fetch_roles_for_multiple_companies(company_ids)
+
         return render(request, 'career_finder/role_call.html', {
-            'roles_data': roles_data
+            'companies': companies,
+            'roles': all_roles
         })
     except Exception as e:
         logger.error(f"Exception in role_call: {e}")

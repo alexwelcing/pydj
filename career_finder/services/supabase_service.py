@@ -50,3 +50,14 @@ def fetch_roles_by_company_id(company_id):
     table = "roles"
     roles = supabase.table(table).select("*").eq("company_id", company_id).execute()
     return roles.data, None
+
+def fetch_roles_for_multiple_companies(company_ids):
+    try:
+        roles = []
+        for company_id in company_ids:
+            company_roles, _ = fetch_roles_by_company_id(company_id)
+            roles.extend(company_roles)
+        return roles, None
+    except Exception as e:
+        logger.error(f"Exception in fetch_roles_for_multiple_companies: {e}")
+        return [], str(e)
