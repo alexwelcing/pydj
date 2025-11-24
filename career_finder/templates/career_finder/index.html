@@ -1,45 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload CSV</title>
+    <title>Career Finder Dashboard</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4">Upload CSV</h1>
-    <div class="mb-4">
-        <form id="upload-form" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                {{ form.label_tag }}
-                {{ form }}
-                <button type="submit" class="btn btn-primary">Upload</button>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="mb-0">Career Finder</h1>
+            <small class="text-muted">Upload companies, mirror them into Supabase, then scrape for career pages and roles.</small>
+        </div>
+        <a href="{% url 'role_call' %}" class="btn btn-outline-secondary">Role Call</a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form id="upload-form" method="post" enctype="multipart/form-data" class="row g-3 align-items-center">
+                {% csrf_token %}
+                <div class="col-md-6">
+                    {{ form.label_tag }}
+                    {{ form }}
+                    <small class="form-text text-muted">CSV should include <code>company_name</code> and <code>url</code> columns.</small>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Upload &amp; Sync to Supabase</button>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="button" id="scrape-selected" class="btn btn-success w-100">Start scraping selected</button>
+                </div>
+            </form>
+            <div id="status-div" class="alert alert-secondary mt-3" role="alert">
+                Awaiting action.
             </div>
-        </form>
+        </div>
     </div>
-    <div id="status-div" class="alert alert-secondary" role="alert">
-        Awaiting action.
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Supabase Companies</h5>
+                <span class="text-muted">Check rows and click "Start scraping selected" to populate roles.</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Select</th>
+                            <th scope="col">Company</th>
+                            <th scope="col">Website</th>
+                            <th scope="col">Career Page</th>
+                            <th scope="col">Tracked Roles</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companies-table-body">
+                        <!-- Data will be populated here via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <div class="mb-4">
-        <a href="{% url 'role_call' %}">
-            <button class="btn btn-secondary">Go to Role Call</button>
-        </a>
-    </div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Company Name</th>
-                <th scope="col">URL</th>
-                <!-- Add other headers as needed -->
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Data will be populated here via JavaScript -->
-        </tbody>
-    </table>
 </div>
 <script src="{% static 'js/upload.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
