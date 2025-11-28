@@ -1,0 +1,6 @@
+Django==4.2.5
+supabase
+python-dotenv
+requests
+beautifulsoup4
+googlesearch-python
