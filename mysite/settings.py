@@ -27,14 +27,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)7=h^omdur$b(24*#2c&3(3mhan+x$dy2=0rpzs9!@g5l-u!!c'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'unsafe-dev-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['.vercel.app', 'https://8000-gitpodsampl-templatepyt-ypvf8v2jv7a.ws-us104.gitpod.io', 'localhost', '127.0.0.1']
+_DEFAULT_ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('DJANGO_ALLOWED_HOSTS', ','.join(_DEFAULT_ALLOWED_HOSTS)).split(',')
+    if host.strip()
+]
 
-CSRF_TRUSTED_ORIGINS = ['https://8000-gitpodsampl-templatepyt-ypvf8v2jv7a.ws-us104.gitpod.io']
+_default_csrf_origins = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [origin for origin in _default_csrf_origins.split(',') if origin]
 
 # Application definition
 
@@ -125,17 +131,26 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-if __import__('os').environ.get('GITPOD_WORKSPACE_URL'):
+# Gitpod and Codespaces helpers for dev previews
+workspace_url = os.getenv('GITPOD_WORKSPACE_URL')
+if workspace_url:
     try:
         gp = __import__('subprocess').run(["gp", "url", "8000"], capture_output=True, text=True)
         if gp.returncode == 0 and gp.stdout:
             ALLOWED_HOSTS += [gp.stdout.strip().split('//', 1)[-1]]
-    except:
+    except Exception:
         ALLOWED_HOSTS += ['*']
+
+codespace_name = os.getenv('CODESPACE_NAME')
+if codespace_name:
+    host = f"{codespace_name}-8000.app.github.dev"
+    ALLOWED_HOSTS += [host]
+    CSRF_TRUSTED_ORIGINS += [f"https://{host}"]
 
