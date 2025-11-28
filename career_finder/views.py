@@ -21,13 +21,28 @@ logger = logging.getLogger(__name__)
 
 def fetch_companies_data(request):
     try:
-        companies, _ = fetch_supabase_companies()
-        companies_data = [{'id': company['id'], 
-                           'company_name': company['company_name'], 
-                           'url': company['url'], 
-                           'careers': company['careers'], 
-                           'roles': company['roles']} 
-                          for company in companies]
+        limit = request.GET.get('limit')
+        limit = int(limit) if limit else None
+        companies, _ = fetch_supabase_companies(limit=limit)
+        company_ids = [company['id'] for company in companies]
+        roles, _ = fetch_roles_for_multiple_companies(company_ids)
+
+        roles_by_company = {}
+        for role in roles:
+            roles_by_company.setdefault(role.get('company_id'), []).append(role)
+
+        companies_data = [
+            {
+                'id': company['id'],
+                'company_name': company['company_name'],
+                'url': company['url'],
+                'careers': company.get('careers'),
+                'roles': roles_by_company.get(company['id'], []),
+                'career_page_url': company.get('career_page_url'),
+                'updated_at': company.get('updated_at')
+            }
+            for company in companies
+        ]
         return JsonResponse({'status': 'success', 'data': companies_data})
     except Exception as e:
         logger.error(f"Exception in fetch_companies_data: {e}")
@@ -40,6 +55,7 @@ def start_scraping(request):
         for row in selected_rows:
             find_and_add_roles_from_dives(row['id'], row['url'])
         return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'POST required'}, status=405)
 
 def role_call(request):
     try:

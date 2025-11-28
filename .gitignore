@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Expo / React Native artifacts
+mobile-app/node_modules/
+mobile-app/.expo/
+mobile-app/dist/
+
+# Allow Expo client libs in source
+!mobile-app/src/lib/
