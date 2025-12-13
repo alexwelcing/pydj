@@ -7,46 +7,43 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4">Role Call</h1>
-    <div id="status-div" class="alert alert-secondary" role="alert">
-        Awaiting action.
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="mb-0">Role Call</h1>
+            <small class="text-muted">All tracked roles pulled from Supabase for your latest companies.</small>
+        </div>
+        <a href="{% url 'index' %}" class="btn btn-outline-secondary">Back to uploader</a>
     </div>
-    <div class="mb-4">
-        <a href="{% url 'index' %}">
-            <button class="btn btn-secondary">Go to Upload</button>
-        </a>
+
+    <div class="row g-3">
+        {% for role in roles %}
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ role.role_title|default:'Untitled role' }}</h5>
+                        <p class="card-text mb-1"><strong>Company ID:</strong> {{ role.company_id }}</p>
+                        {% if role.salary %}
+                            <p class="card-text text-success mb-1"><strong>Salary:</strong> {{ role.salary }}</p>
+                        {% endif %}
+                        {% if role.score %}
+                            <p class="card-text mb-1"><strong>Score:</strong> {{ role.score }}</p>
+                        {% endif %}
+                        {% if role.role_link %}
+                            <a href="{{ role.role_link }}" target="_blank" class="btn btn-sm btn-primary">View role</a>
+                        {% else %}
+                            <span class="badge bg-secondary">No direct link yet</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">No roles yet. Upload companies and trigger scraping to see results.</div>
+            </div>
+        {% endfor %}
     </div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Role</th>
-                <th scope="col">Link</th>
-                <!-- Add other headers as needed -->
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Data will be populated here via JavaScript -->
-        </tbody>
-    </table>
 </div>
-<script>
-    // Toggling the "Go to Role Call" and "Go to Upload" buttons
-    const roleCallBtn = document.querySelector(".btn-secondary");
-    if (roleCallBtn) {
-        roleCallBtn.addEventListener('click', function() {
-            const currentPage = window.location.pathname;
-            if (currentPage.endsWith('role_call/')) {
-                roleCallBtn.innerText = 'Go to Upload';
-                roleCallBtn.href = "{% url 'index' %}";
-            } else {
-                roleCallBtn.innerText = 'Go to Role Call';
-                roleCallBtn.href = "{% url 'role_call' %}";
-            }
-        });
-    }
-</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
