@@ -8,6 +8,7 @@ A refreshed take on the original job-tracking helper. Upload a CSV of target com
 - Triggerable scraping hook (Google "dives") to discover role titles for selected companies.
 - Dedicated Role Call view for a quick scan of all stored opportunities.
 - CLI-first controls for ingesting CSVs, triggering scraping, and inspecting roles.
+- CLI-first cover letter generator that follows the high-signal transition template.
 - **New:** An Expo-managed mobile companion app (`mobile-app/`) for iOS/Android with dashboard metrics, inline status updates, and on-the-go company capture backed by the same Supabase data.
 
 ## Getting started locally or in Codespaces
@@ -30,6 +31,19 @@ A refreshed take on the original job-tracking helper. Upload a CSV of target com
 
    # Trigger Google Dives scraping for specific companies (repeat flag allowed)
    python manage.py career_cli scrape --company-id 1 --company-id 2
+
+   # Generate a cover letter using the acquisition/transition template
+   python manage.py career_cli cover-letter \
+     --role "Senior Software Engineer, AI" \
+     --name "Ada Lovelace" \
+     --company "FutureAI" \
+     --current-company "AcquiredCo" \
+     --hook-1 "Having shipped production LLM copilots for enterprise clients, I see your agentic roadmap as a perfect fit." \
+     --hook-2 "Your platform focus matches my goal to scale applied AI beyond POCs." \
+     --product "Platform Foundations" \
+     --skills "TypeScript" "Python" "LLM orchestration" \
+     --portfolio "https://linkedin.com/in/adalovelace" \
+     --output cover_letter.txt
    ```
 5. Open the app at `http://localhost:8000/` (Codespaces: `https://<workspace>-8000.app.github.dev/`) to use the refreshed uploader and Role Call UI.
 
