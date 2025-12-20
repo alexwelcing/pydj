@@ -5,7 +5,6 @@ from urllib.parse import urljoin
 from django.core.management.base import BaseCommand, CommandError
 
 from career_finder.services.career_page_finder import find_career_page
-from career_finder.services.cover_letter import generate_cover_letter
 from career_finder.services.dives import find_and_add_roles_from_dives
 from career_finder.services.supabase_service import (
     fetch_roles_for_multiple_companies,
@@ -52,46 +51,6 @@ class Command(BaseCommand):
             help="If no company IDs are provided, scrape the latest N companies (default: 10)",
         )
 
-        cover_letter = subparsers.add_parser(
-            "cover-letter",
-            help="Generate a high-signal cover letter using the transition template",
-        )
-        cover_letter.add_argument("--role", required=True, help="Target role title")
-        cover_letter.add_argument("--name", required=True, help="Your name for the signature and subject")
-        cover_letter.add_argument("--company", required=True, help="Target company name")
-        cover_letter.add_argument(
-            "--current-company",
-            required=True,
-            help="Company where you are currently driving strategy",
-        )
-        cover_letter.add_argument(
-            "--hook-1",
-            required=True,
-            help="Custom hook sentence tying your experience to the job description",
-        )
-        cover_letter.add_argument(
-            "--hook-2",
-            required=True,
-            help="Follow-up hook sentence about why this team or product is next for you",
-        )
-        cover_letter.add_argument(
-            "--product",
-            help="Optional product or team name to weave into the trajectory sentence",
-        )
-        cover_letter.add_argument(
-            "--portfolio",
-            help="Optional portfolio or LinkedIn link appended under the signature",
-        )
-        cover_letter.add_argument(
-            "--skills",
-            nargs="+",
-            help="List of skills or stacks to emphasize in the value proposition",
-        )
-        cover_letter.add_argument(
-            "--output",
-            help="Optional path to save the generated cover letter (prints to stdout by default)",
-        )
-
     def handle(self, *args, **options):
         subcommand = options.get("subcommand")
         if subcommand == "ingest":
@@ -100,8 +59,6 @@ class Command(BaseCommand):
             self._list(options)
         elif subcommand == "scrape":
             self._scrape(options)
-        elif subcommand == "cover-letter":
-            self._cover_letter(options)
         else:
             raise CommandError("Unknown subcommand")
 
@@ -190,25 +147,3 @@ class Command(BaseCommand):
 
             find_and_add_roles_from_dives(company["id"], target_url)
             self.stdout.write(self.style.SUCCESS(f"Scraped roles for {company['company_name']} ({target_url})"))
-
-    def _cover_letter(self, options):
-        output_path = options.get("output")
-
-        letter = generate_cover_letter(
-            role_name=options["role"],
-            applicant_name=options["name"],
-            company_name=options["company"],
-            hook_sentence_one=options["hook_1"],
-            hook_sentence_two=options["hook_2"],
-            current_company=options["current_company"],
-            product_or_team=options.get("product"),
-            portfolio_link=options.get("portfolio"),
-            skills=options.get("skills") or [],
-        )
-
-        if output_path:
-            destination = Path(output_path)
-            destination.write_text(letter + "\n", encoding="utf-8")
-            self.stdout.write(self.style.SUCCESS(f"Cover letter saved to {destination.resolve()}"))
-
-        self.stdout.write(letter)
